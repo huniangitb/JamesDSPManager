@@ -1,0 +1,140 @@
+# ============================================================
+# JamesDSPManager — Native Library Build (GitHub Actions)
+#
+# Builds libjamesdsp.so (main DSP engine) and
+# jamesDSPImpulseToolbox.so (impulse response toolbox)
+# using Android NDK ndk-build.
+#
+# Targets: armeabi-v7a, arm64-v8a, x86
+# API level: 21 (Android 5.0 Lollipop)
+# ============================================================
+
+name: Build libjamesdsp
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+  # Allow manual trigger from GitHub Actions UI
+  workflow_dispatch:
+
+jobs:
+  ndk-build:
+    name: ndk-build (${{ matrix.abi }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        abi: [armeabi-v7a, arm64-v8a, x86]
+
+    steps:
+      # -------------------------------------------------------
+      # 1. Check out the repository
+      # -------------------------------------------------------
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      # -------------------------------------------------------
+      # 2. Set up Java (required by Android SDK / ndk-build)
+      # -------------------------------------------------------
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      # -------------------------------------------------------
+      # 3. Install Android SDK command-line tools + NDK
+      # -------------------------------------------------------
+      - name: Install Android SDK & NDK
+        run: |
+          # Download Android command-line tools
+          SDK_MGR_URL="https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip"
+          ANDROID_HOME="$HOME/android-sdk"
+          mkdir -p "$ANDROID_HOME/cmdline-tools"
+
+          echo "Downloading Android command-line tools..."
+          curl -fsSL "$SDK_MGR_URL" -o /tmp/cmdline-tools.zip
+          unzip -q /tmp/cmdline-tools.zip -d "$ANDROID_HOME/cmdline-tools"
+          mv "$ANDROID_HOME/cmdline-tools/cmdline-tools" "$ANDROID_HOME/cmdline-tools/latest"
+          rm -f /tmp/cmdline-tools.zip
+
+          # Accept licenses
+          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses > /dev/null 2>&1 || true
+
+          # Install NDK (side-by-side, version 25 which is well-tested)
+          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" \
+            "ndk;25.2.9519653" \
+            "platforms;android-21" \
+            > /dev/null 2>&1
+
+          echo "ANDROID_HOME=$ANDROID_HOME" >> $GITHUB_ENV
+          echo "ANDROID_NDK_HOME=$ANDROID_HOME/ndk/25.2.9519653" >> $GITHUB_ENV
+
+      # -------------------------------------------------------
+      # 4. Build libjamesdsp.so (main DSP engine)
+      # -------------------------------------------------------
+      - name: Build libjamesdsp.so
+        working-directory: Main/libjamesdsp
+        run: |
+          export PATH="$ANDROID_HOME/ndk/25.2.9519653:$PATH"
+          echo "=== Building libjamesdsp.so for ${{ matrix.abi }} ==="
+          ndk-build APP_ABI=${{ matrix.abi }} \
+                     NDK_PROJECT_PATH=. \
+                     NDK_APPLICATION_MK=./jni/Application.mk \
+                     -j$(nproc)
+
+      # -------------------------------------------------------
+      # 5. Build jamesDSPImpulseToolbox.so (impulse response reader)
+      # -------------------------------------------------------
+      - name: Build jamesDSPImpulseToolbox.so
+        working-directory: Main/DSPManager
+        run: |
+          export PATH="$ANDROID_HOME/ndk/25.2.9519653:$PATH"
+          echo "=== Building jamesDSPImpulseToolbox.so for ${{ matrix.abi }} ==="
+          ndk-build APP_ABI=${{ matrix.abi }} \
+                     NDK_PROJECT_PATH=. \
+                     NDK_APPLICATION_MK=./jni/Application.mk \
+                     -j$(nproc)
+
+      # -------------------------------------------------------
+      # 6. Upload artifacts (organized per ABI)
+      # -------------------------------------------------------
+      - name: Upload .so artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: libjamesdsp-${{ matrix.abi }}
+          path: |
+            Main/libjamesdsp/libs/${{ matrix.abi }}/libjamesdsp.so
+            Main/DSPManager/libs/${{ matrix.abi }}/jamesDSPImpulseToolbox.so
+          if-no-files-found: error
+
+  # -----------------------------------------------------------
+  # Combine all ABI builds into a single artifact
+  # -----------------------------------------------------------
+  package:
+    name: Package all ABIs
+    needs: ndk-build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download all ABI artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: libjamesdsp-*
+          merge-multiple: true
+
+      - name: Show built files
+        run: |
+          echo "=== Built libraries ==="
+          find . -name '*.so' -exec file {} \; | sort
+          echo ""
+          echo "=== Directory structure ==="
+          find . -name '*.so' | sort
+
+      - name: Upload combined package
+        uses: actions/upload-artifact@v4
+        with:
+          name: libjamesdsp-all-abi
+          path: .
+          if-no-files-found: error
