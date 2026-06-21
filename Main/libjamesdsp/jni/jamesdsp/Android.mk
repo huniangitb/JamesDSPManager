@@ -91,17 +91,17 @@ LOCAL_SRC_FILES := \
 # terminator
 LOCAL_LDLIBS := -llog
 ifeq ($(TARGET_ARCH_ABI), armeabi-v7a)
-LOCAL_CPPFLAGS += -Wall -Wextra -ffunction-sections -fdata-sections -Ofast -march=armv7-a -mfpu=neon -ftree-vectorize -fvisibility=hidden -DJAMESDSP_REFERENCE_IMPL #-DDEBUG -g
-LOCAL_CFLAGS += -Wall -Wextra -ffunction-sections -fdata-sections -Ofast -march=armv7-a -mfpu=neon -ftree-vectorize -fvisibility=hidden -DJAMESDSP_REFERENCE_IMPL #-DDEBUG -g
+LOCAL_CPPFLAGS += -Wall -Wextra -ffunction-sections -fdata-sections -O3 -ffast-math -march=armv7-a -mfpu=neon -ftree-vectorize -fvisibility=hidden -DJAMESDSP_REFERENCE_IMPL #-DDEBUG -g
+LOCAL_CFLAGS += -Wall -Wextra -ffunction-sections -fdata-sections -O3 -ffast-math -march=armv7-a -mfpu=neon -ftree-vectorize -fvisibility=hidden -DJAMESDSP_REFERENCE_IMPL #-DDEBUG -g
 else ifeq ($(TARGET_ARCH_ABI), arm64-v8a)
-LOCAL_CPPFLAGS += -Wall -Wextra -ffunction-sections -fdata-sections -Ofast -march=armv8-a -mfpu=neon -ftree-vectorize -fvisibility=hidden -DJAMESDSP_REFERENCE_IMPL #-DDEBUG -g
-LOCAL_CFLAGS += -Wall -Wextra -ffunction-sections -fdata-sections -Ofast -march=armv8-a -mfpu=neon -ftree-vectorize -fvisibility=hidden -DJAMESDSP_REFERENCE_IMPL #-DDEBUG -g
+LOCAL_CPPFLAGS += -Wall -Wextra -ffunction-sections -fdata-sections -O3 -ffast-math -march=armv8-a -ftree-vectorize -fvisibility=hidden -DJAMESDSP_REFERENCE_IMPL #-DDEBUG -g
+LOCAL_CFLAGS += -Wall -Wextra -ffunction-sections -fdata-sections -O3 -ffast-math -march=armv8-a -ftree-vectorize -fvisibility=hidden -DJAMESDSP_REFERENCE_IMPL #-DDEBUG -g
 else ifeq ($(TARGET_ARCH_ABI), x86)
-LOCAL_CPPFLAGS += -ffunction-sections -fdata-sections -Ofast -ftree-vectorize -fvisibility=hidden -DJAMESDSP_REFERENCE_IMPL #-DDEBUG -g
-LOCAL_CFLAGS += -ffunction-sections -fdata-sections -Ofast -ftree-vectorize -fvisibility=hidden -DJAMESDSP_REFERENCE_IMPL #-DDEBUG -g
+LOCAL_CPPFLAGS += -ffunction-sections -fdata-sections -O3 -ffast-math -ftree-vectorize -fvisibility=hidden -DJAMESDSP_REFERENCE_IMPL #-DDEBUG -g
+LOCAL_CFLAGS += -ffunction-sections -fdata-sections -O3 -ffast-math -ftree-vectorize -fvisibility=hidden -DJAMESDSP_REFERENCE_IMPL #-DDEBUG -g
 else ifeq ($(TARGET_ARCH_ABI), armeabi)
-LOCAL_CPPFLAGS += -ffunction-sections -fdata-sections -Ofast -ftree-vectorize -fvisibility=hidden -DJAMESDSP_REFERENCE_IMPL #-DDEBUG -g
-LOCAL_CFLAGS += -ffunction-sections -fdata-sections -Ofast -ftree-vectorize -fvisibility=hidden -DJAMESDSP_REFERENCE_IMPL #-DDEBUG -g
+LOCAL_CPPFLAGS += -ffunction-sections -fdata-sections -O3 -ffast-math -ftree-vectorize -fvisibility=hidden -DJAMESDSP_REFERENCE_IMPL #-DDEBUG -g
+LOCAL_CFLAGS += -ffunction-sections -fdata-sections -O3 -ffast-math -ftree-vectorize -fvisibility=hidden -DJAMESDSP_REFERENCE_IMPL #-DDEBUG -g
 endif
 LOCAL_CFLAGS += -flto
 LOCAL_CPPFLAGS += -flto
