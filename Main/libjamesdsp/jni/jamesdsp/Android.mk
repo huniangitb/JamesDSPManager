@@ -103,5 +103,7 @@ else ifeq ($(TARGET_ARCH_ABI), armeabi)
 LOCAL_CPPFLAGS += -ffunction-sections -fdata-sections -Ofast -ftree-vectorize -fvisibility=hidden -DJAMESDSP_REFERENCE_IMPL #-DDEBUG -g
 LOCAL_CFLAGS += -ffunction-sections -fdata-sections -Ofast -ftree-vectorize -fvisibility=hidden -DJAMESDSP_REFERENCE_IMPL #-DDEBUG -g
 endif
-LOCAL_LDFLAGS += -Wl,--gc-sections,--exclude-libs,ALL
+LOCAL_CFLAGS += -flto
+LOCAL_CPPFLAGS += -flto
+LOCAL_LDFLAGS += -flto -Wl,--gc-sections,--exclude-libs,ALL
 include $(BUILD_SHARED_LIBRARY)

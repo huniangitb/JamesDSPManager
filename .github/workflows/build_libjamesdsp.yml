@@ -63,14 +63,14 @@ jobs:
           # Accept licenses
           yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses > /dev/null 2>&1 || true
 
-          # Install NDK (side-by-side, version 25 which is well-tested)
+          # Install NDK r29 (latest stable)
           "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" \
-            "ndk;25.2.9519653" \
+            "ndk;29.0.14206865" \
             "platforms;android-21" \
             > /dev/null 2>&1
 
           echo "ANDROID_HOME=$ANDROID_HOME" >> $GITHUB_ENV
-          echo "ANDROID_NDK_HOME=$ANDROID_HOME/ndk/25.2.9519653" >> $GITHUB_ENV
+          echo "ANDROID_NDK_HOME=$ANDROID_HOME/ndk/29.0.14206865" >> $GITHUB_ENV
 
       # -------------------------------------------------------
       # 4. Build libjamesdsp.so (main DSP engine)
@@ -78,7 +78,7 @@ jobs:
       - name: Build libjamesdsp.so
         working-directory: Main/libjamesdsp
         run: |
-          export PATH="$ANDROID_HOME/ndk/25.2.9519653:$PATH"
+          export PATH="$ANDROID_HOME/ndk/29.0.14206865:$PATH"
           echo "=== Building libjamesdsp.so for ${{ matrix.abi }} ==="
           ndk-build APP_ABI=${{ matrix.abi }} \
                      NDK_PROJECT_PATH=. \
@@ -91,7 +91,7 @@ jobs:
       - name: Build jamesDSPImpulseToolbox.so
         working-directory: Main/DSPManager
         run: |
-          export PATH="$ANDROID_HOME/ndk/25.2.9519653:$PATH"
+          export PATH="$ANDROID_HOME/ndk/29.0.14206865:$PATH"
           echo "=== Building jamesDSPImpulseToolbox.so for ${{ matrix.abi }} ==="
           ndk-build APP_ABI=${{ matrix.abi }} \
                      NDK_PROJECT_PATH=. \
